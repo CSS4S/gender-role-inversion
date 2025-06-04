@@ -55,4 +55,6 @@ Payoff matrices are more complicated in gendered division of labor problems comp
 
 ### Computational experiment
 
+- Our primary explanatory variable is the initial prevalence of gender role *inverters*, call it $I\in[0, 1]$ for which we will test values from 0.1 to 0.9 in steps of 0.2 to start. We observe the prevalence of women leaders over time 
+
 ## Analysis
