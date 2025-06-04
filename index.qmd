@@ -1,0 +1,58 @@
+---
+title: "Can widespread gender role inversion buck gendered social norms?"
+author: Matt Turner
+date: 4 June 2025
+bibliography: 
+  - /Users/mt/workspace/Writing/library.bib
+
+format:
+  html:
+    toc: true
+    include-in-header: header.html
+    theme: 
+      light:
+        - theme-light.scss
+        - styles.scss
+      dark:
+        - darkly 
+        - theme-dark.scss
+        - styles.scss
+    fontsize: 0.9em
+    linestretch: 1.2
+---
+
+# Introduction
+
+- In diverse sustainability contexts, women are more trustworthy than men and therefore more popular as seeds in intervention seed sets.
+- For example, in microfinance programs have been observed to have greater effects on well-being for women compared to men [@Karlan2011]. 
+- In another example, residential solar subsidies given to men in Papua New Guinea were reported to be spent more on "pigs, prostitutes, and poker chips" instead of solar panels [@Sovacool2011].
+- In many cases, sustainability would be boosted if more women led interventions and institutions to support sustainability, however there exists a persistent social norm against women leaders and achiever, and against men who follow women, across social contexts that can't be supported, yet persists [@OConnor2019Origins] and is even worse for non-white or transgender women due to intersectional disadvantage [@OConnor2019c].
+- In these notes, let's develop a complementary coordination game of division of labor where agents partner with someone of the opposite gender to generate payoffs in a domestic, business, or institutional setting, e.g., by capitalizing on available microcredit or subsidies for solar panels. In our stylized model, this deviance penalty that enforces the social norm is deducted from men's payoffs if they follow a woman in their interactions. Women benefit equally whether they lead or follow a man. Because this can also represent a partner dance we call this the Partner Dance game (Table 1)
+- We hypothesize that there is a critical initial prevalence of norm inversion (women lead, men follow) is required to lead a system away from machismo (majority/all male leaders) and towards feminism (majority/all female leaders). We hypothesize that some initial prevalence of norm inversion values will lead to short-term oscillations between machismo and feminism. This would be an indicator of equality over longer time scales, since social systems are stochastic by nature, and so it would be unrealistic to expect exact equality over long periods of time.
+
+
+## Model
+
+### Initialization
+
+- Complete social network to start
+- Set genders randomly. Note this means agents won't have the same number of same- and opposite-gender neighbors as one another.
+- Set the deviance penalty $\delta$ and an initial fraction of men as followers to see what initial support for bucking the norm can overcome what penalty.
+
+
+## Gendered payoff matrices
+
+Payoff matrices are more complicated in gendered division of labor problems compared to the spatial cooperation problem of the previous chapter. They are read as follows: the row labels indicate the behavior of the focal agent. If the focal agent is a woman, her payoff can be read from the matrix by finding her behavior among the row labels, e.g., *Lead* or *Follow* in the Partner Dance game, then finding her man partner's behavior among the column labels. Use these two behaviors to find the payoff matrix cell inside the border in the bottom right corner of the payoff matrix (Table 1). 
+
+### Partner dance
+
+- If there is no social sanction for men this means there is no deviance penalty, i.e., $\delta = 0$. When $\delta \geq 0$, then men suffer some judgement for choosing to follow a woman. 
+
+#### Payoff matrix
+
+{{< include tables/malefollow-sanction.html >}}
+
+
+### Computational experiment
+
+## Analysis
