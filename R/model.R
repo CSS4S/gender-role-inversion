@@ -18,7 +18,12 @@ dance_partnering <- function(focal, model) {
 #' Partner dance game interaction that yields payoffs.
 #'
 dance_interaction <- function(focal, partner, model) {
-  
+  model$get_parameter("payoff_matrix")[[
+    focal$get_parameter("gender")
+  ]][
+    focal$get_behavior(), partner$get_behavior()
+  ] %>%
+    focal$set_next_fitness()
 }
 
 
@@ -129,8 +134,6 @@ assign_gendered_partners <- function(model) {
       neighbors <- agent$get_neighbors()$agents
       
       # Separate same- and other-gender neighbors
-      
-      
       # Build list of potential teachers of same gender, including agent itself
       same_gender_neighbors <- purrr::keep(neighbors, \(n) n$get_attribute("gender") == gender)
       teachers <- c(same_gender_neighbors, list(agent))
@@ -184,10 +187,10 @@ make_dance_model <- function(n_agents = 40, inversion_prevalence = 0.2,
         "Partner" = c("Lead", "Follow")
       )
     )
-  abm$set_parameter(
-    "payoff_matrix", 
-    
-  )
+  
+  abm$set_parameter("payoff_matrix", 
+                    list(Woman = women_payoff_matrix, 
+                         Man = men_payoff_matrix))
   
   return (abm)  
 }
@@ -195,62 +198,63 @@ make_dance_model <- function(n_agents = 40, inversion_prevalence = 0.2,
 
 
 #--------- TESTING INITIALIZE_DANCERS -----------
-# abm <- make_abm(n_agents = 20);
+abm <- make_abm(n_agents = 20);
 
-# initialize_dancers(abm, inversion_prevalence = 0.2);
+initialize_dancers(abm, inversion_prevalence = 0.2);
 
-# cat("\n\nWomen's table of behaviors\n")
-# print(
-#   table(
-#     unlist(
-#       purrr::map(
-#         unlist(
-#           abm$agents %>% purrr::keep(\(a) a$get_attribute("gender") == "Woman")
-#         ),
-#         \(a) a$get_behavior()
-#       )
-#     )
-#   )
-# )
-
-# cat("\n\nMen's table of behaviors\n")
-# print(
-#   table(
-#     unlist(
-#       purrr::map(
-#         unlist(
-#           abm$agents %>% purrr::keep(\(a) a$get_attribute("gender") == "Man")
-#         ),
-#         \(a) a$get_behavior()
-#       )
-#     )
-#   )
-# )
+cat("\n\nWomen's table of behaviors\n")
+print(
+  table(
+    unlist(
+      purrr::map(
+        unlist(
+          abm$agents %>% purrr::keep(\(a) a$get_attribute("gender") == "Woman")
+        ),
+        \(a) a$get_behavior()
+      )
+    )
+  )
+)
+cat("\n\nMen's table of behaviors\n")
+print(
+  table(
+    unlist(
+      purrr::map(
+        unlist(
+          abm$agents %>% purrr::keep(\(a) a$get_attribute("gender") == "Man")
+        ),
+        \(a) a$get_behavior()
+      )
+    )
+  )
+)
 
 
 #--------- TESTING ASSIGN_TEACHERS
 
-# cat("\n\nTesting potential teacher and domestic partner assignment success\n")
-# assign_gendered_partners(abm)
-# a1 <- abm$agents[[1]]
-# a1_gender <- abm$agents[[1]]$get_attribute("gender")
-# cat("\na1 gender: ", a1_gender)
-# a1_teachers <- a1$get_attribute("teachers")
-# 
-# cat("\na1 teachers: ", purrr::map_vec(a1_teachers, ~ .x$get_name()))
-# cat("\nAll a1 teachers same gender?\n")
-# teacher_genders <-purrr::map_vec(a1_teachers, ~ .x$get_attribute("gender"))
-# print(all(teacher_genders == a1_gender))
-# 
-# cat("\nAll a1 potential partners opposite gender?\n")
-# partners <- a1$get_attribute("partners")
-# partner_genders <- purrr::map_vec(partners, ~ .x$get_attribute("gender"))
-# print(all(partner_genders != a1_gender))
-# 
-# cat("\n\n*** Checking genders explicitly: ***\n")
-# cat("\nAgent gender:\n")
-# print(a1_gender)
-# cat("\nTeacher genders:\n")
-# print(teacher_genders)
-# cat("\nDomestic partner genders:\n")
-# print(partner_genders)
+cat("\n\nTesting potential teacher and domestic partner assignment success\n")
+assign_gendered_partners(abm)
+a1 <- abm$agents[[1]]
+a1_gender <- abm$agents[[1]]$get_attribute("gender")
+cat("\na1 gender: ", a1_gender)
+a1_teachers <- a1$get_attribute("teachers")
+
+cat("\na1 teachers: ", purrr::map_vec(a1_teachers, ~ .x$get_name()))
+cat("\nAll a1 teachers same gender?\n")
+teacher_genders <-purrr::map_vec(a1_teachers, ~ .x$get_attribute("gender"))
+print(all(teacher_genders == a1_gender))
+
+cat("\nAll a1 potential partners opposite gender?\n")
+partners <- a1$get_attribute("partners")
+partner_genders <- purrr::map_vec(partners, ~ .x$get_attribute("gender"))
+print(all(partner_genders != a1_gender))
+
+cat("\n\n*** Checking genders explicitly: ***\n")
+cat("\nAgent gender:\n")
+print(a1_gender)
+cat("\nTeacher genders:\n")
+print(teacher_genders)
+cat("\nDomestic partner genders:\n")
+print(partner_genders)
+
+

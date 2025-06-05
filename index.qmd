@@ -36,8 +36,9 @@ format:
 ### Initialization
 
 - Complete social network to start
-- Set genders randomly. Note this means agents won't have the same number of same- and opposite-gender neighbors as one another.
-- Set the deviance penalty $\delta$ and an initial fraction of men as followers to see what initial support for bucking the norm can overcome what penalty.
+- Set genders randomly with N/2 of each gender. Note this means agents won't have the same number of same- and opposite-gender neighbors as one another.
+- Set the deviance penalty $\delta$ and an initial fraction of women as leaders/men as followers, which we call $I$ for gender role *inversion*, to see how great initial support for norm inversion must be to reach "feminism" outcomes instead of "machismo" outcomes
+
 
 
 ## Gendered payoff matrices
@@ -55,6 +56,7 @@ Payoff matrices are more complicated in gendered division of labor problems comp
 
 ### Computational experiment
 
-- Our primary explanatory variable is the initial prevalence of gender role *inverters*, call it $I\in[0, 1]$ for which we will test values from 0.1 to 0.9 in steps of 0.2 to start. We observe the prevalence of women leaders over time 
+- Our primary explanatory variable is the initial prevalence of gender role *inverters*, call it $I\in[0, 1]$ for which we will test values from 0.1 to 0.9 in steps of 0.2 to start. We observe the prevalence of women leaders over time and the prevalence at $t=50$ of women leaders or success rate of achieving fixation of women leaders.
 
 ## Analysis
+
