@@ -18,12 +18,13 @@ dance_partnering <- function(focal, model) {
 #' Partner dance game interaction that yields payoffs.
 #'
 dance_interaction <- function(focal, partner, model) {
-  model$get_parameter("payoff_matrix")[[
-    focal$get_parameter("gender")
+  payoff <- model$get_parameter("payoff_matrix")[[
+    focal$get_attribute("gender")
   ]][
     focal$get_behavior(), partner$get_behavior()
-  ] %>%
-    focal$set_next_fitness()
+  ] 
+  
+  focal$set_next_fitness(payoff)
 }
 
 
@@ -151,9 +152,21 @@ assign_gendered_partners <- function(model) {
 
 make_dance_model <- function(n_agents = 40, inversion_prevalence = 0.2, 
                              deviance_penalty = 0.0, graph = NULL) {
+  
+  # Create learning strategy based on learning and iteration
+  # functions defined above
+  learning_strategy <- 
+    make_learning_strategy(
+      dance_partnering,
+      dance_interaction,
+      gender_coordination_social_learning,
+      "Dance partner learning"
+    )
+  
   if (is.null(graph)) {
     abm <- make_abm(
       n_agents = n_agents, 
+      learning_strategy = learning_strategy,
       inversion_prevalence = inversion_prevalence,
       deviance_penalty = deviance_penalty #,
       # graph = graph
@@ -164,8 +177,11 @@ make_dance_model <- function(n_agents = 40, inversion_prevalence = 0.2,
   
   initialize_dancers(abm, inversion_prevalence)
   assign_gendered_partners(abm)
-  
-  women_payoff_matrix <- # Define payoff matrix: row 1 is for focal cooperator, row 2 focal defector
+  women <- purrr::keep(abm$agents, \(a) a$get_attribute("gender") == "Woman")
+  men <- purrr::keep(abm$agents, \(a) a$get_attribute("gender") == "Man")
+  print(table(purrr::map_vec(women, \(a) a$get_behavior())))
+  print(table(purrr::map_vec(men, \(a) a$get_behavior())))
+  women_payoff_matrix <- 
     matrix(
       c(0, 1, 
         1, 0),
@@ -258,3 +274,7 @@ cat("\nDomestic partner genders:\n")
 print(partner_genders)
 
 
+
+
+abm <- make_dance_model()
+trial <- run_trial(abm, stop = 20)
