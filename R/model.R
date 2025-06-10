@@ -229,68 +229,6 @@ make_dance_model <- function(n_agents = 100, inversion_prevalence = 0.5,
 }
 
 
-
-#--------- TESTING INITIALIZE_DANCERS -----------
-abm <- make_abm(n_agents = 20);
-
-initialize_dancers(abm, inversion_prevalence = 0.2);
-
-#---------OLD----------- testing
-# cat("\n\nWomen's table of behaviors\n")
-# print(
-#   table(
-#     unlist(
-#       purrr::map(
-#         unlist(
-#           abm$agents %>% purrr::keep(\(a) a$get_attribute("Gender") == "Woman")
-#         ),
-#         \(a) a$get_behavior()
-#       )
-#     )
-#   )
-# )
-# cat("\n\nMen's table of behaviors\n")
-# print(
-#   table(
-#     unlist(
-#       purrr::map(
-#         unlist(
-#           abm$agents %>% purrr::keep(\(a) a$get_attribute("Gender") == "Man")
-#         ),
-#         \(a) a$get_behavior()
-#       )
-#     )
-#   )
-# )
-
-
-#--------- TESTING ASSIGN_TEACHERS -----------
-# cat("\n\nTesting potential teacher and domestic partner assignment success\n")
-# assign_gendered_partners(abm)
-# a1 <- abm$agents[[1]]
-# a1_gender <- abm$agents[[1]]$get_attribute("Gender")
-# cat("\na1 gender: ", a1_gender)
-# a1_teachers <- a1$get_attribute("teachers")
-# 
-# cat("\na1 teachers: ", purrr::map_vec(a1_teachers, ~ .x$get_name()))
-# cat("\nAll a1 teachers same gender?\n")
-# teacher_genders <-purrr::map_vec(a1_teachers, ~ .x$get_attribute("Gender"))
-# print(all(teacher_genders == a1_gender))
-# 
-# cat("\nAll a1 potential partners opposite gender?\n")
-# partners <- a1$get_attribute("partners")
-# partner_genders <- purrr::map_vec(partners, ~ .x$get_attribute("Gender"))
-# print(all(partner_genders != a1_gender))
-# 
-# cat("\n\n*** Checking genders explicitly: ***\n")
-# cat("\nAgent gender:\n")
-# print(a1_gender)
-# cat("\nTeacher genders:\n")
-# print(teacher_genders)
-# cat("\nDomestic partner genders:\n")
-# print(partner_genders)
-
-
 #--------------- TRIAL RUN DEVELOPMENT --------------
 genders_fixated <- function(model) {
   
@@ -350,3 +288,4 @@ summ_prevalence <- obs %>%
 
 
 print(obs, n = Inf)
+print(tail(summ_prevalence, n = 20))
