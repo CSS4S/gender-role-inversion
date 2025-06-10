@@ -21,6 +21,7 @@ format:
     linestretch: 1.2
 ---
 
+
 # Introduction
 
 - In diverse sustainability contexts, women are more trustworthy than men and therefore more popular as seeds in intervention seed sets.
@@ -28,7 +29,12 @@ format:
 - In another example, residential solar subsidies given to men in Papua New Guinea were reported to be spent more on "pigs, prostitutes, and poker chips" instead of solar panels [@Sovacool2011].
 - In many cases, sustainability would be boosted if more women led interventions and institutions to support sustainability, however there exists a persistent social norm against women leaders and achiever, and against men who follow women, across social contexts that can't be supported, yet persists [@OConnor2019Origins] and is even worse for non-white or transgender women due to intersectional disadvantage [@OConnor2019c].
 - In these notes, let's develop a complementary coordination game of division of labor where agents partner with someone of the opposite gender to generate payoffs in a domestic, business, or institutional setting, e.g., by capitalizing on available microcredit or subsidies for solar panels. In our stylized model, this deviance penalty that enforces the social norm is deducted from men's payoffs if they follow a woman in their interactions. Women benefit equally whether they lead or follow a man. Because this can also represent a partner dance we call this the Partner Dance game (Table 1)
-- We hypothesize that there is a critical initial prevalence of norm inversion (women lead, men follow) is required to lead a system away from machismo (majority/all male leaders) and towards feminism (majority/all female leaders). We hypothesize that some initial prevalence of norm inversion values will lead to short-term oscillations between machismo and feminism. This would be an indicator of equality over longer time scales, since social systems are stochastic by nature, and so it would be unrealistic to expect exact equality over long periods of time.
+- We hypothesize that there is a critical initial prevalence of norm inversion
+  (women lead, men follow) is required to lead a system away from machismo
+  (majority/all male leaders) and towards feminism (majority/all female
+  leaders). We hypothesize that some initial prevalence of *inverters*, i.e., 
+  women leaders and men followers, will lead to short-term oscillations between machismo and feminism. 
+  This would be an indicator of equality over longer time scales, since social systems are stochastic by nature, and so it would be unrealistic to expect exact equality over long periods of time.
 
 
 ## Model

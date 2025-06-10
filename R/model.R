@@ -4,8 +4,16 @@
 # Date: 2025-06-03
 #
 
-library(socmod)
+library(dplyr)
+library(ggplot2)
 library(magrittr)
+library(purrr)
+
+
+# To install socmod: 
+# devtools::install_github("css4s/socmod")
+library(socmod)
+
 
 #' Partner selection for partner dance game
 #'
@@ -19,11 +27,12 @@ dance_partnering <- function(focal, model) {
 #'
 dance_interaction <- function(focal, partner, model) {
   payoff <- model$get_parameter("payoff_matrix")[[
-    focal$get_attribute("gender")
+    focal$get_attribute("Gender")
   ]][
     focal$get_behavior(), partner$get_behavior()
   ] 
   
+  focal$fitness_current <- payoff
   focal$set_next_fitness(payoff)
 }
 
@@ -43,7 +52,8 @@ gender_coordination_social_learning <- function(model) {
       fitnesses <- purrr::map_vec(teachers, \(t) t$fitness_current)
       teacher <- sample(teachers, 1, prob = fitnesses)[[1]]
       agent$set_next_behavior(teacher$behavior_current)
-      agent$set_next_fitness(teacher$fitness_current)
+      # XXX 
+      # agent$set_next_fitness(teacher$fitness_current)
     }
   )
   
@@ -51,6 +61,7 @@ gender_coordination_social_learning <- function(model) {
   # next behavior/fitness
   learning_model_step(model)
 }
+
 
 
 initialize_dancers <- function(model, inversion_prevalence = 0.2) {
@@ -68,13 +79,13 @@ initialize_dancers <- function(model, inversion_prevalence = 0.2) {
   purrr::walk(
     women, 
     \(w) {
-      w$set_attribute("gender", "Woman")
+      w$set_attribute("Gender", "Woman")
     }
   )
   purrr::walk(
     men, 
     \(m) {
-      m$set_attribute("gender", "Man")
+      m$set_attribute("Gender", "Man")
     }
   )
  
@@ -129,28 +140,28 @@ assign_gendered_partners <- function(model) {
   purrr::walk(
     agents,
     \(agent) {
-      gender <- agent$get_attribute("gender")
+      gender <- agent$get_attribute("Gender")
       
       # Get neighbors (assumed to return agent objects)
       neighbors <- agent$get_neighbors()$agents
       
       # Separate same- and other-gender neighbors
       # Build list of potential teachers of same gender, including agent itself
-      same_gender_neighbors <- purrr::keep(neighbors, \(n) n$get_attribute("gender") == gender)
+      same_gender_neighbors <- purrr::keep(neighbors, \(n) n$get_attribute("Gender") == gender)
       teachers <- c(same_gender_neighbors, list(agent))
       agent$set_attribute("teachers", teachers)
       
       # Build list of potential domestic partners, neighbors of opposite gender
       agent$set_attribute(
         "partners", 
-        purrr::keep(neighbors, \(n) n$get_attribute("gender") != gender)
+        purrr::keep(neighbors, \(n) n$get_attribute("Gender") != gender)
       )
     }
   )
 }
 
 
-make_dance_model <- function(n_agents = 40, inversion_prevalence = 0.2, 
+make_dance_model <- function(n_agents = 100, inversion_prevalence = 0.5, 
                              deviance_penalty = 0.0, graph = NULL) {
   
   # Create learning strategy based on learning and iteration
@@ -175,12 +186,18 @@ make_dance_model <- function(n_agents = 40, inversion_prevalence = 0.2,
     stop("Only complete network is supported; use n_agents to build model")
   }
   
+  # Initialize all dancers as leaders or followers according to initial prevalence
   initialize_dancers(abm, inversion_prevalence)
+  # Pre-compute each agent's potential dance partners (opposite gender) and teachers (same)
   assign_gendered_partners(abm)
-  women <- purrr::keep(abm$agents, \(a) a$get_attribute("gender") == "Woman")
-  men <- purrr::keep(abm$agents, \(a) a$get_attribute("gender") == "Man")
-  print(table(purrr::map_vec(women, \(a) a$get_behavior())))
-  print(table(purrr::map_vec(men, \(a) a$get_behavior())))
+  
+  # Sync a parameter that tracks all women agents to avoid repeated filtering.
+  women <- purrr::keep(abm$agents, \(a) a$get_attribute("Gender") == "Woman")
+  abm$set_parameter("women", women)
+  # Ditto for men.
+  men <- purrr::keep(abm$agents, \(a) a$get_attribute("Gender") == "Man")
+  abm$set_parameter("men", men)
+  
   women_payoff_matrix <- 
     matrix(
       c(0, 1, 
@@ -192,7 +209,7 @@ make_dance_model <- function(n_agents = 40, inversion_prevalence = 0.2,
         "Partner" = c("Lead", "Follow")
       )
     )
-  men_payoff_matrix <- # Define payoff matrix: row 1 is for focal cooperator, row 2 focal defector
+  men_payoff_matrix <- 
     matrix(
       c(0,                    1, 
         1 - deviance_penalty, 0),
@@ -218,63 +235,118 @@ abm <- make_abm(n_agents = 20);
 
 initialize_dancers(abm, inversion_prevalence = 0.2);
 
-cat("\n\nWomen's table of behaviors\n")
-print(
-  table(
-    unlist(
-      purrr::map(
-        unlist(
-          abm$agents %>% purrr::keep(\(a) a$get_attribute("gender") == "Woman")
-        ),
-        \(a) a$get_behavior()
-      )
-    )
-  )
+#---------OLD----------- testing
+# cat("\n\nWomen's table of behaviors\n")
+# print(
+#   table(
+#     unlist(
+#       purrr::map(
+#         unlist(
+#           abm$agents %>% purrr::keep(\(a) a$get_attribute("Gender") == "Woman")
+#         ),
+#         \(a) a$get_behavior()
+#       )
+#     )
+#   )
+# )
+# cat("\n\nMen's table of behaviors\n")
+# print(
+#   table(
+#     unlist(
+#       purrr::map(
+#         unlist(
+#           abm$agents %>% purrr::keep(\(a) a$get_attribute("Gender") == "Man")
+#         ),
+#         \(a) a$get_behavior()
+#       )
+#     )
+#   )
+# )
+
+
+#--------- TESTING ASSIGN_TEACHERS -----------
+# cat("\n\nTesting potential teacher and domestic partner assignment success\n")
+# assign_gendered_partners(abm)
+# a1 <- abm$agents[[1]]
+# a1_gender <- abm$agents[[1]]$get_attribute("Gender")
+# cat("\na1 gender: ", a1_gender)
+# a1_teachers <- a1$get_attribute("teachers")
+# 
+# cat("\na1 teachers: ", purrr::map_vec(a1_teachers, ~ .x$get_name()))
+# cat("\nAll a1 teachers same gender?\n")
+# teacher_genders <-purrr::map_vec(a1_teachers, ~ .x$get_attribute("Gender"))
+# print(all(teacher_genders == a1_gender))
+# 
+# cat("\nAll a1 potential partners opposite gender?\n")
+# partners <- a1$get_attribute("partners")
+# partner_genders <- purrr::map_vec(partners, ~ .x$get_attribute("Gender"))
+# print(all(partner_genders != a1_gender))
+# 
+# cat("\n\n*** Checking genders explicitly: ***\n")
+# cat("\nAgent gender:\n")
+# print(a1_gender)
+# cat("\nTeacher genders:\n")
+# print(teacher_genders)
+# cat("\nDomestic partner genders:\n")
+# print(partner_genders)
+
+
+#--------------- TRIAL RUN DEVELOPMENT --------------
+genders_fixated <- function(model) {
+  
+  # 
+  women_behaviors <- map_vec(model$get_parameter("women"), ~ .x$behavior_current)
+  women_fixated <- all(women_behaviors[1] == women_behaviors)
+  men_behaviors <- map_vec(model$get_parameter("men"), ~ .x$behavior_current)
+  men_fixated <- all(men_behaviors[1] == men_behaviors)
+  
+  # If both fixated return TRUE
+  return (women_fixated && men_fixated)
+}
+
+
+abm <- make_dance_model(); trial <- run_trial(abm, stop = genders_fixated); plot_prevalence(trial, tracked_behaviors = c("Lead", "Follow"))
+# abm <- make_dance_model(); trial <- run_trial(abm, stop = socmod::fixated); plot_prevalence(trial, tracked_behaviors = c("Lead", "Follow"))
+
+obs <- trial$observations
+
+is_woman <- function(gender) {
+  return (gender == "Woman")
+}
+
+
+is_leader <- function(behavior) {
+  return (behavior == "Lead")
+}
+
+
+# Helper to check if the gender-behavior combo is an inverter
+is_inverter <- function(gender, behavior) {
+  woman_leader <- is_woman(gender) && is_leader(behavior)
+  man_follower <- !is_woman(gender) && !is_leader(behavior)
+  
+  return (as.numeric(woman_leader || man_follower))
+}
+
+
+#---------- CREATE OBSERVATION AND SUMMARY TBLS --------------
+obs$Gender <- purrr::map_vec(
+  obs$agent, \(a_chr) trial$model$get_agent(a_chr)$get_attribute("Gender")
 )
-cat("\n\nMen's table of behaviors\n")
-print(
-  table(
-    unlist(
-      purrr::map(
-        unlist(
-          abm$agents %>% purrr::keep(\(a) a$get_attribute("gender") == "Man")
-        ),
-        \(a) a$get_behavior()
-      )
-    )
-  )
-)
 
 
-#--------- TESTING ASSIGN_TEACHERS
+# Define some helper funcs to add `inverter` column to obs
+obs <- 
+  rowwise(obs) %>% 
+  mutate(inverter = is_inverter(Gender, Behavior)) %>% 
+  ungroup()
 
-cat("\n\nTesting potential teacher and domestic partner assignment success\n")
-assign_gendered_partners(abm)
-a1 <- abm$agents[[1]]
-a1_gender <- abm$agents[[1]]$get_attribute("gender")
-cat("\na1 gender: ", a1_gender)
-a1_teachers <- a1$get_attribute("teachers")
-
-cat("\na1 teachers: ", purrr::map_vec(a1_teachers, ~ .x$get_name()))
-cat("\nAll a1 teachers same gender?\n")
-teacher_genders <-purrr::map_vec(a1_teachers, ~ .x$get_attribute("gender"))
-print(all(teacher_genders == a1_gender))
-
-cat("\nAll a1 potential partners opposite gender?\n")
-partners <- a1$get_attribute("partners")
-partner_genders <- purrr::map_vec(partners, ~ .x$get_attribute("gender"))
-print(all(partner_genders != a1_gender))
-
-cat("\n\n*** Checking genders explicitly: ***\n")
-cat("\nAgent gender:\n")
-print(a1_gender)
-cat("\nTeacher genders:\n")
-print(teacher_genders)
-cat("\nDomestic partner genders:\n")
-print(partner_genders)
+# Calculate Inverter prevalence by gender
+summ_prevalence <- obs %>%
+  group_by(Step, Gender) %>%
+  summarise(`Inverter prevalence` = mean(inverter),  
+            `Mean payoff` = mean(Fitness),
+            .groups = "drop")
 
 
-
-
-abm <- make_dance_model()
-trial <- run_trial(abm, stop = 20)
+print(obs, n = Inf)
