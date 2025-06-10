@@ -52,8 +52,6 @@ gender_coordination_social_learning <- function(model) {
       fitnesses <- purrr::map_vec(teachers, \(t) t$fitness_current)
       teacher <- sample(teachers, 1, prob = fitnesses)[[1]]
       agent$set_next_behavior(teacher$behavior_current)
-      # XXX 
-      # agent$set_next_fitness(teacher$fitness_current)
     }
   )
   
@@ -80,12 +78,16 @@ initialize_dancers <- function(model, inversion_prevalence = 0.2) {
     women, 
     \(w) {
       w$set_attribute("Gender", "Woman")
+      w$fitness_current = 0.0
+      w$set_next_fitness(0.0)
     }
   )
   purrr::walk(
     men, 
     \(m) {
       m$set_attribute("Gender", "Man")
+      m$fitness_current = 0.0
+      m$set_next_fitness(0.0)
     }
   )
  
@@ -97,6 +99,7 @@ initialize_dancers <- function(model, inversion_prevalence = 0.2) {
   
   women_leaders <- purrr::map(women_leader_idxs, \(ii) model$get_agent(ii))
   women_followers <- purrr::map(women_follower_idxs, \(ii) model$get_agent(ii))
+  
   purrr::walk(
     women_leaders, 
     \(w) {
@@ -232,9 +235,9 @@ make_dance_model <- function(n_agents = 100, inversion_prevalence = 0.5,
 #--------------- TRIAL RUN DEVELOPMENT --------------
 genders_fixated <- function(model) {
   
-  # 
   women_behaviors <- map_vec(model$get_parameter("women"), ~ .x$behavior_current)
   women_fixated <- all(women_behaviors[1] == women_behaviors)
+  
   men_behaviors <- map_vec(model$get_parameter("men"), ~ .x$behavior_current)
   men_fixated <- all(men_behaviors[1] == men_behaviors)
   
@@ -242,11 +245,6 @@ genders_fixated <- function(model) {
   return (women_fixated && men_fixated)
 }
 
-
-abm <- make_dance_model(); trial <- run_trial(abm, stop = genders_fixated); plot_prevalence(trial, tracked_behaviors = c("Lead", "Follow"))
-# abm <- make_dance_model(); trial <- run_trial(abm, stop = socmod::fixated); plot_prevalence(trial, tracked_behaviors = c("Lead", "Follow"))
-
-obs <- trial$observations
 
 is_woman <- function(gender) {
   return (gender == "Woman")
@@ -265,27 +263,3 @@ is_inverter <- function(gender, behavior) {
   
   return (as.numeric(woman_leader || man_follower))
 }
-
-
-#---------- CREATE OBSERVATION AND SUMMARY TBLS --------------
-obs$Gender <- purrr::map_vec(
-  obs$agent, \(a_chr) trial$model$get_agent(a_chr)$get_attribute("Gender")
-)
-
-
-# Define some helper funcs to add `inverter` column to obs
-obs <- 
-  rowwise(obs) %>% 
-  mutate(inverter = is_inverter(Gender, Behavior)) %>% 
-  ungroup()
-
-# Calculate Inverter prevalence by gender
-summ_prevalence <- obs %>%
-  group_by(Step, Gender) %>%
-  summarise(`Inverter prevalence` = mean(inverter),  
-            `Mean payoff` = mean(Fitness),
-            .groups = "drop")
-
-
-print(obs, n = Inf)
-print(tail(summ_prevalence, n = 20))
