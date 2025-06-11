@@ -2,7 +2,7 @@ source("R/model.R")  # make_dance_model, genders_fixated, is_inverter
 
 demo_single_trial <- function(n_agents = 100, 
                               inversion_prevalence = 0.7,
-                              deviance_penalty = 0.1) {
+                              deviance_penalty = 0.1, graph = NULL) {
 
   abm <- make_dance_model(n_agents, inversion_prevalence, deviance_penalty) 
 
