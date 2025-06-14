@@ -25,12 +25,14 @@ get_boundary <- function(grid, res) {
 
 
 # Main function to compute vector field + dynamics
-replicator_dynamics_plot <- function(delta = 0.5, resolution = 18, steps = 5000, step_size = 0.05, tol = 0.08, scale_low = 0.025, scale_high = 0.06, arrow_alpha = 0.6) {
+replicator_dynamics_plot <- function(delta = 0.5, resolution = 18, steps = 5000, step_size = 0.01, tol = 0.1
+                                     , scale_low = 0.025, scale_high = 0.06, arrow_alpha = 0.6, base_size = 12) {
   # Create a coarser grid
-  w_vals <- seq(0.01, 0.99, length.out = resolution)
-  m_vals <- seq(0.01, 0.99, length.out = resolution)
+  w_vals <- seq(0.0, 1.0, by = 0.05)
+  m_vals <- seq(0.0, 1.0, by = 0.05)
+  resolution = length(m_vals)
   grid <- expand.grid(w = w_vals, m = m_vals)
-  
+  print(grid)
   # Fitness means
   fW_bar <- with(grid, grid$w * grid$m + (1 - grid$w) * (1 - grid$m))
   fM_bar <- with(grid, grid$m * grid$w * (1 - delta) + (1 - grid$m) * (1 - grid$w))
@@ -45,13 +47,8 @@ replicator_dynamics_plot <- function(delta = 0.5, resolution = 18, steps = 5000,
       dm = dm_raw / norm
     )
   
-  # Saddle point: interior minimum of vector norm
-  saddle <- grid %>%
-    filter(m > 0.1, m < 0.9, w > 0.1, w < 0.9) %>%
-    slice_min(order_by = norm, n = 1) %>%
-    select(w, m) %>%
-    unlist() %>%
-    as.numeric()
+  print(grid)
+  # return (grid)
   
   # Classify destination
   classify_end <- function(w, m) {
@@ -70,17 +67,10 @@ replicator_dynamics_plot <- function(delta = 0.5, resolution = 18, steps = 5000,
   
   grid$dest <- pmap_chr(grid[, c("w", "m")], classify_end)
   grid$col <- case_when(
-    grid$dest == "zero" ~ "dodgerblue",
-    grid$dest == "one" ~ "hotpink",
+    grid$dest == "zero" ~ "dodgerblue3",
+    grid$dest == "one" ~ "hotpink2",
     TRUE ~ "gray70"
   )
-  
-  
-  
-  # Trace separatrix forward and backward
-  sep_forward <- trace_trajectory(saddle[1], saddle[2], delta, direction = 1)
-  sep_backward <- trace_trajectory(saddle[1], saddle[2], delta, direction = -1)
-  sep <- bind_rows(sep_backward, sep_forward)
   
   grid <- grid %>%
     mutate(
@@ -92,13 +82,23 @@ replicator_dynamics_plot <- function(delta = 0.5, resolution = 18, steps = 5000,
   # Plot
   ggplot(grid, aes(x = w, y = m)) +
     geom_segment(aes(xend = w + dw * arrow_scale, yend = m + dm * arrow_scale, color = col),
-                 linewidth = 0.55, arrow = arrow(length = unit(0.135, "cm")), alpha = arrow_alpha) +
+                 linewidth = 0.6, 
+                 arrow = arrow(length = unit(0.11, "cm"), type = "open", angle = 50),
+                 alpha = arrow_alpha) +
+    # geom_line(data = tibble(w = seq(0, 1, length.out = 200), 
+    #                         m = 1 - w),
+    #           aes(x = w, y = m), 
+    #           color = "darkgrey", 
+    #           linetype = "dashed", 
+    #           linewidth = 1.05,
+    #           inherit.aes = FALSE,
+    #           alpha = 0.75) +
     scale_color_identity() +
     theme_classic(base_size = base_size) +
     coord_fixed() +
     labs(
-      x = TeX("Proportion of Women Inverters ($w_0$)"),
-      y = TeX("Initial proportion of Men Inverters ($m_0$)"),
+      x = TeX("Women leader prevalence, $w$"),
+      y = TeX("Men follower prevalence, $m$"),
       title = TeX(paste("Deviance penalty, $\\delta =$", delta)) 
     )
 }

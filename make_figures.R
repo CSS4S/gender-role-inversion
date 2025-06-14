@@ -8,6 +8,23 @@ library(ggplot2)
 
 source("R/analysis.R")
 
+replicator_deviance_triptych <- function(deltas = c(0.0, 0.5, 0.9),
+                                         save_dir = "Figures",
+                                         width = 5.5, height = 3.25, dpi = 300) {
+  
+  for (delta in deltas) {
+  
+    p <- replicator_dynamics_plot(
+      delta = delta, scale_low = 0.0255, scale_high = 0.0425, resolution = 15, 
+      arrow_alpha = 1, steps = 50000, base_size = 16
+    )
+    
+    ggsave(
+      file.path(save_dir, paste0("replicator_delta=", delta, ".pdf")), dpi = 300
+    )
+  }
+}
+
 demo_figure <- function(n_agents = 50, graph = NULL, 
                         inversion_prevalence  = 0.625, 
                         deviance_penalty = 0.8, linewidth = 1, base_size = 14,
@@ -39,4 +56,4 @@ demo_figure <- function(n_agents = 50, graph = NULL,
 }
 
 
-sp <- demo_figure()
+# sp <- demo_figure()

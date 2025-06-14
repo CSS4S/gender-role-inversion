@@ -251,13 +251,14 @@ genders_fixated_plus_gen <- function(stop_steps = 5) {
   return (
     
     function(model) {
-      model$set_parameter("extra_steps", 0)
+      
       stop <- FALSE
+      
       if (genders_fixated(model)) {
         extra_steps <- model$set_parameter("extra_steps") + 1
         model$set_parameter("extra_steps", extra_steps)
         
-        stop 
+        stop <- extra_steps > stop_steps
       }
       
       return (stop)
